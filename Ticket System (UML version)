@@ -1,0 +1,287 @@
+from enum import Enum
+from datetime import datetime
+
+# Enums for specific attributes
+class ReservationStatus(Enum):
+    pending = "Pending"
+    confirmed = "Confirmed"
+    cancelled = "Cancelled"
+
+
+class AdminStatus(Enum):
+    active = "Active"
+    inactive = "Inactive"
+
+
+class TicketType(Enum):
+    single_day = "Single-Day Pass"
+    multi_day = "Two-Day Pass"
+    annual_membership = "Annual Membership"
+    child_ticket = "Child Ticket"
+    group_ticket = "Group Ticket"
+    VIP_ticket = "VIP Experience Pass"
+
+
+class Membership(Enum):
+    none = "None"
+    annual = "Annual"
+    VIP = "VIP"
+
+# Person class
+class Person:
+    """ Represents the class for person with their attributes like name, age, email, and phone number."""
+    def __init__(self, name="", age=0, email="", phone_number=""):
+        self._name = name
+        self._age = age
+        self._email = email
+        self._phone_number = phone_number
+
+    def get_name(self):
+        return self._name
+
+    def set_name(self, name):
+        self._name = name
+
+    def get_age(self):
+        return self._age
+
+    def set_age(self, age):
+        self._age = age
+
+    def get_email(self):
+        return self._email
+
+    def set_email(self, email):
+        self._email = email
+
+    def get_phone_number(self):
+        return self._phone_number
+
+    def set_phone_number(self, phone_number):
+        self._phone_number = phone_number
+
+    def __str__(self):
+        return f"Name: {self._name}, Age: {self._age}, Email: {self._email}, Phone: {self._phone_number}"
+
+
+# Customer class
+class Customer(Person):
+    """Represents a "child" class for person, customer, who can hold memberships and earn/redeem loyalty points."""
+    def __init__(self, customer_id, name, age, email, phone_number, membership, loyalty_points=0):
+        super().__init__(name, age, email, phone_number)
+        self.customer_id = customer_id
+        self.membership = membership
+        self.loyalty_points = loyalty_points
+
+    # methods for loyalty points
+    def add_loyalty_points(self, points):
+        self.loyalty_points += points
+
+    def redeem_loyalty_points(self, points):
+        if self.loyalty_points >= points:
+            self.loyalty_points -= points
+            return True
+        return False
+
+    def __str__(self):
+        return f"Customer ID: {self.customer_id}, {super().__str__()}, Membership: {self.membership.value}, Loyalty Points: {self.loyalty_points}"
+
+
+# Admin class
+class Admin(Person):
+    """Represents a class for admin who manages tickets and sales."""
+    def __init__(self, name, age, email, phone_number, visit_date, status):
+        super().__init__(name, age, email, phone_number)
+        self.visit_date = visit_date
+        self.status = AdminStatus[status]
+
+    def update_ticket_price(self, ticket, new_price):
+        ticket.price = new_price
+
+    def view_ticket_sales(self):
+        return "Sales details are displayed here."
+
+    def __str__(self):
+        return f"Admin: {super().__str__()}, Visit Date: {self.visit_date}, Status: {self.status.value}"
+
+
+# Employee class
+class Employee(Person):
+    """Class to represent the employees of the park with their attributes"""
+    def __init__(self, employee_id, name, age, email, phone_number, role, working_hours):
+        super().__init__(name, age, email, phone_number)
+        self.employee_id = employee_id
+        self.role = role
+        self.working_hours = working_hours
+
+    def assign_task(self, task):
+        return f"Task '{task}' assigned to {self.get_name()}."
+
+    def record_hours(self, hours):
+        self.working_hours += hours
+        return f"Updated working hours: {self.working_hours}"
+
+    def __str__(self):
+        return f"Employee ID: {self.employee_id}, {super().__str__()}, Role: {self.role}, Working Hours: {self.working_hours}"
+
+
+# Ticket class
+class Ticket:
+    """Represents a ticket with attributes like type, price, validity, and discount status."""
+    def __init__(self, ticket_id, ticket_type, price, validity_days, discount=False):
+        self.ticket_id = ticket_id
+        self.ticket_type = ticket_type
+        self.price = price
+        self.validity_days = validity_days
+        self.discount = discount
+        self.sales = 0
+
+    # method for applying discounts
+    def apply_discount(self, percentage):
+        if self.discount:
+            self.price -= self.price * (percentage / 100)
+
+    # methods for getting the ticket information, and prints it out.
+    def get_ticket_info(self):
+        return {
+            "Ticket ID": self.ticket_id,
+            "Type": self.ticket_type.value,
+            "Price": self.price,
+            "Validity (days)": self.validity_days,
+            "Discount Applied": self.discount,
+        }
+
+
+# Payment class
+class Payment:
+    def __init__(self, amount, method, total, status):
+        self.amount = amount
+        self.method = method
+        self.total = total
+        self.status = status
+
+    def process_payment(self):
+        if self.amount >= self.total:
+            self.status = "Paid"
+            return True
+        self.status = "Failed"
+        return False
+
+    def get_receipt(self):
+        return f"Payment Status: {self.status}, Amount Paid: {self.amount}, Method: {self.method}"
+
+    def __str__(self):
+        return f"Payment of {self.amount} AED via {self.method}. Status: {self.status}"
+
+
+# Reservation class
+class Reservation:
+    """Represents a reservation with attributes like visit date, and their status"""
+    def __init__(self, visit_date, reservation_status: ReservationStatus):
+        self.visit_date = visit_date
+        self.reservation_status = reservation_status
+
+    def cancel_reservation(self):
+        self.reservation_status = ReservationStatus.cancelled
+
+    def confirm_reservation(self):
+        self.reservation_status = ReservationStatus.confirmed
+
+    def __str__(self):
+        return f"Reservation for {self.visit_date}, Status: {self.reservation_status.value}"
+
+
+# Discount class (Parent)
+class Discount:
+    """Represents a discount with attributes like type, percentage, and dates."""
+    def __init__(self, discount_type, discount_id):
+        self.discount_type = discount_type
+        self.discount_id = discount_id
+
+    def calculate_discount(self, price, percentage):
+        return price - (price * percentage / 100)
+
+    def __str__(self):
+        return f"Discount Type: {self.discount_type}, Discount ID: {self.discount_id}"
+
+
+# TicketDiscount class (Child)
+class TicketDiscount(Discount):
+    """Represents a ticket discount, extending the basic discount functionality."""
+    def __init__(self, discount_type, discount_id, percentage, start_date, end_date, ticket_id):
+        super().__init__(discount_type, discount_id)
+        self.percentage = percentage
+        self.start_date = start_date
+        self.end_date = end_date
+        self.ticket_id = ticket_id
+
+    def is_active(self):
+        """Checks if the discount is currently active based on today's date."""
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        return self.start_date <= current_date <= self.end_date
+
+    def __str__(self):
+        return f"TicketDiscount - {super().__str__()}, Percentage: {self.percentage}%, Ticket ID: {self.ticket_id}"
+
+
+# Test Cases
+def test_implementation():
+    """Here we are running the tests of the reservation process."""
+
+    print("Running Test Cases...")
+
+    # Creating a Customer
+    customer1 = Customer(customer_id=1, name="Hessa", age=25, email="hessa@gmail.com", phone_number="0501234567", membership=Membership.annual)
+    print(customer1)
+
+    # Adding and redeeming loyalty points
+    customer1.add_loyalty_points(50)
+    print(f"After adding loyalty points: {customer1.loyalty_points}")
+    customer1.redeem_loyalty_points(30)
+    print(f"After redeeming loyalty points: {customer1.loyalty_points}")
+
+    # Creating an Admin
+    admin1 = Admin(name="Hind", age=40, email="hind@gmail.com", phone_number="0508765432", visit_date="2024-12-01", status="active")
+    print(admin1)
+
+    # Creating an Employee
+    employee1 = Employee(employee_id=101, name="Hamda", age=30, email="hamda@gmail.com", phone_number="0559876543", role="Ticket Manager", working_hours=40)
+    print(employee1)
+    print(employee1.assign_task("Manage next week's reservations"))
+    print(employee1.record_hours(8))
+
+    # Creating a Ticket
+    ticket1 = Ticket(ticket_id=5001, ticket_type=TicketType.VIP_ticket, price=300, validity_days=1, discount=True)
+    print(f"Ticket Info: {ticket1.get_ticket_info()}")
+    ticket1.apply_discount(10)
+    print(f"Price after discount: {ticket1.price} AED")
+
+    # Creating a Payment
+    payment1 = Payment(amount=300, method="Credit Card", total=300, status="Pending")
+    if payment1.process_payment():
+        print("Payment successful!")
+    else:
+        print("Payment failed.")
+    print(payment1.get_receipt())
+
+    # Creating a Reservation
+    reservation1 = Reservation(visit_date="2024-12-15", reservation_status=ReservationStatus.pending)
+    print(reservation1)
+    reservation1.confirm_reservation()
+    print(f"After confirmation: {reservation1}")
+
+    # Creating a Discount
+    discount1 = Discount(discount_type="VIP", discount_id=123)
+    print(discount1)
+    new_price = discount1.calculate_discount(500, 20)
+    print(f"Price after applying discount: {new_price} AED")
+
+    # Creating a TicketDiscount (child class)
+    ticket_discount1 = TicketDiscount("VIP", 123, 20, "2024-11-01", "2024-12-01", 5001)
+    print(ticket_discount1)
+    print(f"Is Active: {ticket_discount1.is_active()}")
+
+
+# Run Test Cases
+test_implementation()
+
