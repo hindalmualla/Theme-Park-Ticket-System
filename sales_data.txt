@@ -1,0 +1,29 @@
+Visit Date: 2025/10/09
+User: maryam | Ticket: Two-Day Pass x3 | Price: $432.00 | Subtotal: $1296.00
+User: maryam | Ticket: Group Ticket (10+) x2 | Price: $176.00 | Subtotal: $352.00
+Total Order Price for maryam: $1648.00
+--------------------------------------------------
+Visit Date: 2024/12/19
+User: Hind | Ticket: Single-Day Pass x4 | Price: $275.00 | Subtotal: $1100.00
+User: Hind | Ticket: Child Ticket x5 | Price: $185.00 | Subtotal: $925.00
+User: Hind | Ticket: VIP Experience Pass x1 | Price: $550.00 | Subtotal: $550.00
+Total Order Price for Hind: $2575.00
+--------------------------------------------------
+Visit Date: 2026/10/12
+User: Hamda | Ticket: Two-Day Pass x1 | Price: $432.00 | Subtotal: $432.00
+User: Hamda | Ticket: Child Ticket x2 | Price: $185.00 | Subtotal: $370.00
+Total Order Price for Hamda: $802.00
+--------------------------------------------------
+Visit Date: 2025/01/01
+User: Hessa | Ticket: Single-Day Pass x2 | Price: $275.00 | Subtotal: $550.00
+User: Hessa | Ticket: Annual Membership x2 | Price: $1564.00 | Subtotal: $3128.00
+User: Hessa | Ticket: Group Ticket (10+) x1 | Price: $176.00 | Subtotal: $176.00
+User: Hessa | Ticket: VIP Experience Pass x1 | Price: $550.00 | Subtotal: $550.00
+Total Order Price for Hessa: $4404.00
+--------------------------------------------------
+Visit Date: 2026/03/10
+User: Ahmed | Ticket: Two-Day Pass x1 | Price: $432.00 | Subtotal: $432.00
+User: Ahmed | Ticket: Annual Membership x1 | Price: $1564.00 | Subtotal: $1564.00
+User: Ahmed | Ticket: Group Ticket (10+) x1 | Price: $176.00 | Subtotal: $176.00
+Total Order Price for Ahmed: $2172.00
+--------------------------------------------------
