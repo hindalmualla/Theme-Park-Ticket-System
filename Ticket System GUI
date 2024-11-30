@@ -1,0 +1,447 @@
+import tkinter as tk
+from tkinter import messagebox
+
+#a class for the ticket application
+class TicketApp:
+    """class to represent the ticket application purchasing system.
+    This includes the ticket types and their descriptions for a user-friendly experience
+    """
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Ticket Purchasing System")
+        self.current_user = None  # this would just keep track of the logged-in user
+
+        # The tickets data structure with the ticket types and their description
+        self.tickets = {
+            "Single-Day Pass": {
+                "price": 275,
+                "validity": "1 Day",
+                "description": "Access to the park for one day",
+                "discount_percentage": 0,
+                "discount_description": "None",
+                "limitation": "Valid only on selected date"
+            },
+            "Two-Day Pass": {
+                "price": 480,
+                "validity": "2 Days",
+                "description": "Access to the park for two consecutive days",
+                "discount_percentage": 10,
+                "discount_description": "10% discount for online purchase",
+                "limitation": "Cannot be split over multiple trips"
+            },
+            "Annual Membership": {
+                "price": 1840,
+                "validity": "1 Year",
+                "description": "Unlimited access for one year",
+                "discount_percentage": 15,
+                "discount_description": "15% discount on renewal",
+                "limitation": "Must be used by the same person"
+            },
+            "Child Ticket": {
+                "price": 185,
+                "validity": "1 Day",
+                "description": "Discounted ticket for children (ages 3-12)",
+                "discount_percentage": 0,
+                "discount_description": "None",
+                "limitation": "Valid only on selected date, must be accompanied by an adult"
+            },
+            "Group Ticket (10+)": {
+                "price": 220,
+                "validity": "1 Day",
+                "description": "Special rate for groups of 10 or more",
+                "discount_percentage": 20,
+                "discount_description": "20% off for groups of 20 or more",
+                "limitation": "Must be booked in advance"
+            },
+            "VIP Experience Pass": {
+                "price": 550,
+                "validity": "1 Day",
+                "description": "Expedited access and reserved seating for shows",
+                "discount_percentage": 0,
+                "discount_description": "None",
+                "limitation": "Limited availability, must be purchased in advance"
+            }
+        }
+
+        # database of users
+        self.users = {}
+
+        # Initialize frames
+        self.init_login_frame()
+
+    # Initialize login frame
+    def init_login_frame(self):
+        self.clear_frames()
+        self.login_frame = tk.Frame(self.root)
+        self.login_frame.pack(pady=50)
+
+        tk.Label(self.login_frame, text="Username").grid(row=0, column=0, padx=5, pady=5)
+        tk.Label(self.login_frame, text="Password").grid(row=1, column=0, padx=5, pady=5)
+
+        self.username_entry = tk.Entry(self.login_frame)
+        self.password_entry = tk.Entry(self.login_frame, show="*")
+
+        self.username_entry.grid(row=0, column=1, padx=5, pady=5)
+        self.password_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        tk.Button(self.login_frame, text="Login", command=self.login).grid(row=2, column=0, pady=10)
+        tk.Button(self.login_frame, text="Register", command=self.init_register_frame).grid(row=2, column=1, pady=10)
+
+    # Initialize registration frame
+    def init_register_frame(self):
+        self.clear_frames()
+        self.register_frame = tk.Frame(self.root)
+        self.register_frame.pack(pady=50)
+
+        tk.Label(self.register_frame, text="Username").grid(row=0, column=0, padx=5, pady=5)
+        tk.Label(self.register_frame, text="Password").grid(row=1, column=0, padx=5, pady=5)
+        tk.Label(self.register_frame, text="Email").grid(row=2, column=0, padx=5, pady=5)
+
+        self.reg_username_entry = tk.Entry(self.register_frame)
+        self.reg_password_entry = tk.Entry(self.register_frame, show="*")
+        self.reg_email_entry = tk.Entry(self.register_frame)
+
+        self.reg_username_entry.grid(row=0, column=1, padx=5, pady=5)
+        self.reg_password_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.reg_email_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        tk.Button(self.register_frame, text="Register", command=self.register).grid(row=3, column=0, pady=10)
+        tk.Button(self.register_frame, text="Back to Login", command=self.init_login_frame).grid(row=3, column=1,
+                                                                                                 pady=10)
+
+    # Clear all frames
+    def clear_frames(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+    def login(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        if username == 'admin' and password == 'admin123':
+            self.current_user = username
+            self.init_admin_dashboard()
+        elif username in self.users and self.users[username]['password'] == password:
+            self.current_user = username
+            messagebox.showinfo("Login Successful", f"Welcome, {username}!")
+            self.init_user_dashboard()
+        else:
+            messagebox.showerror("Login Failed", "Invalid username or password.")
+
+    def register(self):
+        username = self.reg_username_entry.get()
+        password = self.reg_password_entry.get()
+        email = self.reg_email_entry.get()
+        if username in self.users:
+            messagebox.showerror("Registration Failed", "Username already exists.")
+        else:
+            self.users[username] = {'password': password, 'email': email, 'orders': []}
+            messagebox.showinfo("Registration Successful", "You can now log in.")
+            self.init_login_frame()
+
+    def init_user_dashboard(self):
+        self.clear_frames()
+        self.user_dashboard_frame = tk.Frame(self.root)
+        self.user_dashboard_frame.pack(pady=50)
+
+        tk.Label(self.user_dashboard_frame, text=f"Welcome, {self.current_user}", font=('Arial', 16)).pack(pady=10)
+
+        tk.Button(self.user_dashboard_frame, text="Purchase Tickets", command=self.init_ticket_frame).pack(pady=5)
+        tk.Button(self.user_dashboard_frame, text="View/Edit Profile", command=self.view_profile).pack(pady=5)
+        tk.Button(self.user_dashboard_frame, text="View/Modify Orders", command=self.view_orders).pack(pady=5)
+        tk.Button(self.user_dashboard_frame, text="Logout", command=self.logout).pack(pady=5)
+
+    def view_profile(self):
+        self.clear_frames()
+        self.profile_frame = tk.Frame(self.root)
+        self.profile_frame.pack(pady=20)
+
+        user_info = self.users[self.current_user]
+
+        tk.Label(self.profile_frame, text="Profile Information", font=('Arial', 16)).pack(pady=10)
+
+        tk.Label(self.profile_frame, text=f"Username: {self.current_user}").pack()
+        tk.Label(self.profile_frame, text=f"Email: {user_info['email']}").pack()
+
+        tk.Button(self.profile_frame, text="Edit Profile", command=self.edit_profile).pack(pady=5)
+        tk.Button(self.profile_frame, text="Back", command=self.init_user_dashboard).pack(pady=5)
+
+    def edit_profile(self):
+        self.clear_frames()
+        self.edit_profile_frame = tk.Frame(self.root)
+        self.edit_profile_frame.pack(pady=20)
+
+        user_info = self.users[self.current_user]
+
+        tk.Label(self.edit_profile_frame, text="Edit Profile", font=('Arial', 16)).pack(pady=10)
+
+        tk.Label(self.edit_profile_frame, text="Email").pack()
+        self.edit_email_entry = tk.Entry(self.edit_profile_frame)
+        self.edit_email_entry.insert(0, user_info['email'])
+        self.edit_email_entry.pack()
+
+        tk.Label(self.edit_profile_frame, text="New Password").pack()
+        self.edit_password_entry = tk.Entry(self.edit_profile_frame, show="*")
+        self.edit_password_entry.pack()
+
+        tk.Button(self.edit_profile_frame, text="Save Changes", command=self.save_profile_changes).pack(pady=5)
+        tk.Button(self.edit_profile_frame, text="Back", command=self.view_profile).pack(pady=5)
+
+    def save_profile_changes(self):
+        new_email = self.edit_email_entry.get()
+        new_password = self.edit_password_entry.get()
+
+        if new_email:
+            self.users[self.current_user]['email'] = new_email
+        if new_password:
+            self.users[self.current_user]['password'] = new_password
+
+        messagebox.showinfo("Profile Updated", "Your profile has been updated.")
+        self.view_profile()
+
+    def view_orders(self):
+        self.clear_frames()
+        self.orders_frame = tk.Frame(self.root)
+        self.orders_frame.pack(pady=20)
+
+        tk.Label(self.orders_frame, text="Your Orders", font=('Arial', 16)).pack(pady=10)
+
+        user_orders = self.users[self.current_user].get('orders', [])
+        if not user_orders:
+            tk.Label(self.orders_frame, text="You have no orders.").pack()
+        else:
+            for idx, order in enumerate(user_orders):
+                order_frame = tk.Frame(self.orders_frame, bd=1, relief='solid', padx=10, pady=5)
+                order_frame.pack(fill='x', padx=10, pady=5)
+
+                tk.Label(order_frame, text=f"Order #{idx + 1}", font=('Arial', 12, 'bold')).pack(anchor='w')
+
+                # Display visit date
+                tk.Label(order_frame, text=f"Visit Date: {order.get('visit_date', 'Not specified')}").pack(anchor='w')
+
+                # Display tickets in the order
+                for ticket_name, quantity in order['tickets'].items():
+                    tk.Label(order_frame, text=f"{ticket_name} x{quantity}").pack(anchor='w')
+
+                tk.Button(order_frame, text="Delete Order", command=lambda i=idx: self.delete_order(i)).pack(anchor='e',
+                                                                                                             pady=5)
+
+        tk.Button(self.orders_frame, text="Back", command=self.init_user_dashboard).pack(pady=10)
+
+    def delete_order(self, order_index):
+        confirm = messagebox.askyesno("Delete Order", "Are you sure you want to delete this order?")
+        if confirm:
+            del self.users[self.current_user]['orders'][order_index]
+            messagebox.showinfo("Order Deleted", "Your order has been deleted.")
+            self.view_orders()
+
+    def init_ticket_frame(self):
+        self.clear_frames()
+        self.ticket_frame = tk.Frame(self.root)
+        self.ticket_frame.pack(pady=20)
+
+        tk.Label(self.ticket_frame, text="Select Tickets", font=('Arial', 16)).grid(row=0, column=0, columnspan=2,
+                                                                                    pady=10)
+
+        self.cart = {}
+        self.ticket_vars = {}
+
+        row = 1
+        col = 0
+        for ticket_name, details in self.tickets.items():
+            frame = tk.Frame(self.ticket_frame, bd=2, relief='groove')
+            frame.grid(row=row, column=col, padx=10, pady=10, sticky='nsew')
+
+            # Calculatign discounted price
+            price = details['price']
+            discount_percentage = details.get('discount_percentage', 0)
+            discounted_price = price - (price * discount_percentage / 100)
+
+            # Prepare price display
+            if discount_percentage > 0:
+                price_text = f"Price: ${discounted_price:.2f} (Discounted {discount_percentage}% off original price ${price})"
+            else:
+                price_text = f"Price: ${price}"
+
+            tk.Label(frame, text=ticket_name, font=('Arial', 12, 'bold')).pack(anchor='w')
+            tk.Label(frame, text=price_text).pack(anchor='w')
+            tk.Label(frame, text=f"Validity: {details['validity']}").pack(anchor='w')
+            tk.Label(frame, text=f"Description: {details['description']}").pack(anchor='w')
+            tk.Label(frame, text=f"Discount: {details['discount_description']}").pack(anchor='w')
+            tk.Label(frame, text=f"Limitation: {details['limitation']}").pack(anchor='w')
+
+            var = tk.IntVar()
+            self.ticket_vars[ticket_name] = var
+            quantity_frame = tk.Frame(frame)
+            quantity_frame.pack(anchor='w', pady=5)
+            tk.Label(quantity_frame, text="Quantity:").pack(side='left')
+            tk.Spinbox(quantity_frame, from_=0, to=10, textvariable=var, width=5).pack(side='left')
+
+            # Manage grid positions
+            if col == 0:
+                col = 1
+            else:
+                col = 0
+                row += 1
+
+        # Adjust grid weights
+        for i in range(2):
+            self.ticket_frame.columnconfigure(i, weight=1)
+
+        tk.Button(self.ticket_frame, text="Add to Cart", command=self.add_to_cart).grid(row=row + 1, column=0, pady=10)
+        tk.Button(self.ticket_frame, text="View Cart", command=self.view_cart).grid(row=row + 1, column=1, pady=10)
+        tk.Button(self.ticket_frame, text="Back", command=self.init_user_dashboard).grid(row=row + 2, column=0,
+                                                                                         columnspan=2, pady=5)
+
+    def add_to_cart(self):
+        for ticket_name, var in self.ticket_vars.items():
+            quantity = var.get()
+            if quantity > 0:
+                self.cart[ticket_name] = quantity
+        if self.cart:
+            messagebox.showinfo("Cart Updated", "Tickets added to cart.")
+        else:
+            messagebox.showinfo("Cart Empty", "Please select at least one ticket.")
+
+    def view_cart(self):
+        if not self.cart:
+            messagebox.showinfo("Cart Empty", "Your cart is empty.")
+            return
+        self.clear_frames()
+        self.cart_frame = tk.Frame(self.root)
+        self.cart_frame.pack(pady=50)
+
+        tk.Label(self.cart_frame, text="Your Cart", font=('Arial', 16)).pack(pady=10)
+
+        total_price = 0
+        for ticket_name, quantity in self.cart.items():
+            details = self.tickets[ticket_name]
+            price = details['price']
+            discount_percentage = details.get('discount_percentage', 0)
+            discounted_price = price - (price * discount_percentage / 100)
+            subtotal = discounted_price * quantity
+            total_price += subtotal
+            tk.Label(self.cart_frame, text=f"{ticket_name} x{quantity} - ${subtotal:.2f}").pack()
+
+        tk.Label(self.cart_frame, text=f"Total Price: ${total_price:.2f}", font=('Arial', 14)).pack(pady=10)
+
+        tk.Button(self.cart_frame, text="Proceed to Payment", command=self.payment_interface).pack(pady=5)
+        tk.Button(self.cart_frame, text="Back", command=self.init_ticket_frame).pack()
+
+    def payment_interface(self):
+        self.clear_frames()
+        self.payment_frame = tk.Frame(self.root)
+        self.payment_frame.pack(pady=50)
+
+        tk.Label(self.payment_frame, text="Payment Details", font=('Arial', 16)).pack(pady=10)
+
+        # Visit Date
+        tk.Label(self.payment_frame, text="Visit Date (YYYY/MM/DD)").pack()
+        self.visit_date_entry = tk.Entry(self.payment_frame)
+        self.visit_date_entry.pack()
+
+        # Card Number
+        tk.Label(self.payment_frame, text="Card Number").pack()
+        self.card_number_entry = tk.Entry(self.payment_frame)
+        self.card_number_entry.pack()
+
+        # Expiry Date
+        tk.Label(self.payment_frame, text="Expiry Date (MM/YY)").pack()
+        self.expiry_entry = tk.Entry(self.payment_frame)
+        self.expiry_entry.pack()
+
+        # CVV
+        tk.Label(self.payment_frame, text="CVV").pack()
+        self.cvv_entry = tk.Entry(self.payment_frame, show="*")
+        self.cvv_entry.pack()
+
+        tk.Button(self.payment_frame, text="Pay Now", command=self.process_payment).pack(pady=10)
+        tk.Button(self.payment_frame, text="Cancel", command=self.init_ticket_frame).pack()
+
+    def process_payment(self):
+        # Validate the Visit Date
+        visit_date = self.visit_date_entry.get()
+        if not visit_date:
+            messagebox.showerror("Payment Failed", "Please enter a valid visit date.")
+            return
+
+        # Mock payment processing
+        if self.card_number_entry.get() and self.expiry_entry.get() and self.cvv_entry.get():
+            messagebox.showinfo("Payment Successful", f"Your payment has been processed for {visit_date}.")
+            self.save_order(visit_date)
+            self.cart.clear()
+            self.init_user_dashboard()
+        else:
+            messagebox.showerror("Payment Failed", "Please fill all payment details.")
+
+    def save_order(self, visit_date):
+        order = {'tickets': self.cart.copy(), 'visit_date': visit_date}
+        self.users[self.current_user]['orders'].append(order)
+
+    def init_admin_dashboard(self):
+        self.clear_frames()
+        self.admin_frame = tk.Frame(self.root)
+        self.admin_frame.pack(pady=50)
+
+        tk.Label(self.admin_frame, text="Admin Dashboard", font=('Arial', 12)).pack(pady=10)
+
+        tk.Button(self.admin_frame, text="View Sales Data", command=self.view_sales_data).pack(pady=5)
+        tk.Button(self.admin_frame, text="Modify Discounts", command=self.modify_discounts).pack(pady=5)
+        tk.Button(self.admin_frame, text="Logout", command=self.logout).pack(pady=5)
+
+    def view_sales_data(self):
+        total_tickets_sold = {}
+        for user in self.users.values():
+            for order in user.get('orders', []):
+                for ticket_name, quantity in order['tickets'].items():
+                    total_tickets_sold[ticket_name] = total_tickets_sold.get(ticket_name, 0) + quantity
+
+        sales_data = "\n".join([f"{ticket}: {quantity}" for ticket, quantity in total_tickets_sold.items()])
+        messagebox.showinfo("Sales Data", sales_data if sales_data else "No tickets sold yet.")
+
+    def modify_discounts(self):
+        self.clear_frames()
+        self.modify_discounts_frame = tk.Frame(self.root)
+        self.modify_discounts_frame.pack(pady=20)
+
+        tk.Label(self.modify_discounts_frame, text="Modify Discounts", font=('Arial', 16)).pack(pady=10)
+
+        self.discount_vars = {}
+        for ticket_name, details in self.tickets.items():
+            frame = tk.Frame(self.modify_discounts_frame)
+            frame.pack(fill='x', padx=20, pady=5)
+
+            tk.Label(frame, text=ticket_name).grid(row=0, column=0, sticky='w')
+
+            var = tk.IntVar(value=details.get('discount_percentage', 0))
+            self.discount_vars[ticket_name] = var
+            tk.Label(frame, text="Discount (%)").grid(row=0, column=1)
+            tk.Spinbox(frame, from_=0, to=100, textvariable=var, width=5).grid(row=0, column=2)
+
+        tk.Button(self.modify_discounts_frame, text="Save Changes", command=self.save_discounts).pack(pady=10)
+        tk.Button(self.modify_discounts_frame, text="Back", command=self.init_admin_dashboard).pack(pady=5)
+
+    def save_discounts(self):
+        for ticket_name, var in self.discount_vars.items():
+            discount_percentage = var.get()
+            self.tickets[ticket_name]['discount_percentage'] = discount_percentage
+            # Update the discount_description based on the new percentage
+            if discount_percentage > 0:
+                self.tickets[ticket_name]['discount_description'] = f"{discount_percentage}% discount applied"
+            else:
+                self.tickets[ticket_name]['discount_description'] = "None"
+        messagebox.showinfo("Discounts Updated", "Discounts have been updated.")
+        self.init_admin_dashboard()
+
+    def logout(self):
+        self.current_user = None
+        self.cart = {}
+        self.init_login_frame()
+
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TicketApp(root)
+    root.mainloop()
+
+
